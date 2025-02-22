@@ -1,9 +1,19 @@
+"use client";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Volume2 } from "lucide-react";
 
-export default function WordLookup() {
+import { getWordDefinition } from "@/actions/word-api";
+
+export const WordLookup = () => {
+  const handleSearchWord = useCallback(async () => {
+    const word = "hello";
+    const response = await getWordDefinition(word);
+    console.log("❤️‍🔥");
+    console.log(response);
+  }, []);
   return (
     <div className="space-y-4">
       <Card>
@@ -13,7 +23,7 @@ export default function WordLookup() {
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Input placeholder="Enter a word..." />
-            <Button>Search</Button>
+            <Button onClick={handleSearchWord}>Search</Button>
           </div>
         </CardContent>
       </Card>
@@ -80,4 +90,4 @@ export default function WordLookup() {
       </div>
     </div>
   );
-}
+};

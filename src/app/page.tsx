@@ -1,7 +1,6 @@
-"use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GrammarChecker from "@/components/grammar-checker";
-import WordLookup from "@/components/word-lookup";
+import { WordLookup } from "@/components/word-lookup";
 import WritingPractice from "@/components/writing-practice";
 
 export default function Page() {
