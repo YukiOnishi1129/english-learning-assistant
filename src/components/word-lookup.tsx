@@ -181,6 +181,30 @@ export const WordLookup = () => {
                           </dd>
                         </div>
                       )}
+                      {result.synonyms && (
+                        <div>
+                          <dt className="font-medium">Synonyms</dt>
+                          <dd className="text-muted-foreground flex gap-2">
+                            {result.synonyms.map((synonym, i) => (
+                              <span key={`${synonym}-$i}`} className="text-sm">
+                                {synonym},
+                              </span>
+                            ))}
+                          </dd>
+                        </div>
+                      )}
+                      {result.antonyms && (
+                        <div>
+                          <dt className="font-medium">Antonyms</dt>
+                          <dd className="text-muted-foreground flex gap-2">
+                            {result.antonyms.map((antonyms, i) => (
+                              <span key={`${antonyms}-$i}`} className="text-sm">
+                                {antonyms},
+                              </span>
+                            ))}
+                          </dd>
+                        </div>
+                      )}
                     </dl>
                   </div>
                 );
