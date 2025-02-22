@@ -1,19 +1,44 @@
 "use client";
 import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Volume2 } from "lucide-react";
 
 import { getWordDefinition } from "@/actions/word-api";
 
+const schema = z.object({
+  keyword: z.string().nonempty("Please enter a keyword"),
+});
+
 export const WordLookup = () => {
-  const handleSearchWord = useCallback(async () => {
-    const word = "hello";
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      keyword: "",
+    },
+  });
+
+  const onSubmit = useCallback(async (values: z.infer<typeof schema>) => {
+    const word = values.keyword;
     const response = await getWordDefinition(word);
     console.log("❤️‍🔥");
     console.log(response);
   }, []);
+
   return (
     <div className="space-y-4">
       <Card>
@@ -21,10 +46,23 @@ export const WordLookup = () => {
           <CardTitle>Word Lookup</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input placeholder="Enter a word..." />
-            <Button onClick={handleSearchWord}>Search</Button>
-          </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="keyword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Enter a word..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button>Search</Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
 
