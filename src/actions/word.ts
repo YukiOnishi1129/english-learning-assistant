@@ -1,8 +1,8 @@
 "use server";
 import { getWordDefinitionApi } from "./word-api";
 
-import { transformShowWord } from "@/lib/word";
-import type { ShowWordStateType } from "@/types/word";
+import { transformShowWord } from "@/shared/lib/word";
+import type { ShowWordStateType } from "@/shared/types/word";
 
 export const getShowWord = async (
   word: string

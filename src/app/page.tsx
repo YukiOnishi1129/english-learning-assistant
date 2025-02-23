@@ -1,9 +1,14 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GrammarChecker from "@/components/grammar-checker";
-import { WordLookup } from "@/components/word-lookup";
-import WritingPractice from "@/components/writing-practice";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
+import GrammarChecker from "@/shared/components/grammar-checker";
+import { WordLookup } from "@/shared/components/word-lookup";
+import WritingPractice from "@/shared/components/writing-practice";
 
-import { SearchParamsType } from "@/types/util";
+import { SearchParamsType } from "@/shared/types/util";
 
 type Page = {
   searchParams: Promise<SearchParamsType>;

@@ -1,6 +1,6 @@
-import { WordLookup } from "@/components/word-lookup";
+import { WordLookup } from "@/shared/components/word-lookup";
 
-import { SearchParamsType } from "@/types/util";
+import { SearchParamsType } from "@/shared/types/util";
 
 type WordLookupPageProps = {
   searchParams: Promise<SearchParamsType>;

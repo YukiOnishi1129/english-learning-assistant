@@ -9,18 +9,23 @@ import { RingLoader } from "react-spinners";
 
 import { getShowWord } from "@/actions/word";
 
-import { SpeakButton, Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SpeakButton, Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/components/ui/form";
 
-import { sortPartOfSpeechArray } from "@/lib/word";
+import { sortPartOfSpeechArray } from "@/shared/lib/word";
 
 const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
