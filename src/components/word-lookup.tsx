@@ -1,10 +1,10 @@
 "use client";
-import { useCallback, useState, useMemo } from "react";
+import { FC, useCallback, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
+import { SpeakButton, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,7 +14,6 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Volume2 } from "lucide-react";
 
 import { getWordDefinition } from "@/actions/word-api";
 
@@ -65,47 +64,48 @@ export const WordLookup = () => {
   };
 
   // **変換関数**
-  const transformWord = (
-    results: Array<WordResult>
-  ): Array<ShowWordResultType> => {
-    // partOfSpeech ごとにデータをグループ化
-    const groupedResults: Record<string, ShowWordDefinitionType[]> = {};
+  const transformWord = useCallback(
+    (results: Array<WordResult>): Array<ShowWordResultType> => {
+      // partOfSpeech ごとにデータをグループ化
+      const groupedResults: Record<string, ShowWordDefinitionType[]> = {};
 
-    const sortedResults = sortResultsByPartOfSpeech(results);
+      const sortedResults = sortResultsByPartOfSpeech(results);
 
-    sortedResults.forEach((result) => {
-      const {
-        partOfSpeech,
-        definition,
-        examples,
-        synonyms,
-        antonyms,
-        similarTo,
-      } = result;
+      sortedResults.forEach((result) => {
+        const {
+          partOfSpeech,
+          definition,
+          examples,
+          synonyms,
+          antonyms,
+          similarTo,
+        } = result;
 
-      if (!groupedResults[partOfSpeech]) {
-        groupedResults[partOfSpeech] = [];
-      }
+        if (!groupedResults[partOfSpeech]) {
+          groupedResults[partOfSpeech] = [];
+        }
 
-      groupedResults[partOfSpeech].push({
-        definition,
-        examples,
-        synonyms,
-        antonyms,
-        similarTo,
+        groupedResults[partOfSpeech].push({
+          definition,
+          examples,
+          synonyms,
+          antonyms,
+          similarTo,
+        });
       });
-    });
 
-    // グループ化したデータを ShowWordResultType の配列に変換
-    const showResults: ShowWordResultType[] = Object.entries(
-      groupedResults
-    ).map(([partOfSpeech, definitions]) => ({
-      partOfSpeech,
-      definitions,
-    }));
+      // グループ化したデータを ShowWordResultType の配列に変換
+      const showResults: ShowWordResultType[] = Object.entries(
+        groupedResults
+      ).map(([partOfSpeech, definitions]) => ({
+        partOfSpeech,
+        definitions,
+      }));
 
-    return showResults;
-  };
+      return showResults;
+    },
+    []
+  );
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof schema>) => {
@@ -118,7 +118,7 @@ export const WordLookup = () => {
         });
       }
     },
-    [sortResultsByPartOfSpeech]
+    [transformWord]
   );
 
   const partOfSpeechList = useMemo(() => {
@@ -176,10 +176,7 @@ export const WordLookup = () => {
                     </span>
                   ))}
                 </div>
-
-                <Button variant="ghost" size="icon">
-                  <Volume2 className="h-4 w-4" />
-                </Button>
+                <SpeakButton text={word.word} />
               </CardTitle>
             </CardHeader>
 
@@ -205,46 +202,32 @@ export const WordLookup = () => {
                               <>
                                 <h6 className="font-medium text-sm">Example</h6>
                                 {result.examples.map((example, i) => (
-                                  <p
+                                  <div
                                     key={`${example}-${i}`}
-                                    className="text-muted-foreground"
+                                    className="flex gap-2"
                                   >
-                                    ・{example}
-                                  </p>
+                                    <p
+                                      key={`${example}-${i}`}
+                                      className="text-muted-foreground flex items-center"
+                                    >
+                                      ・{example}
+                                    </p>
+                                    <SpeakButton text={example} />
+                                  </div>
                                 ))}
                               </>
                             )}
                             {result.synonyms && (
-                              <>
-                                <dt className="font-medium  text-sm">
-                                  Synonyms
-                                </dt>
-                                <dd className="text-muted-foreground flex gap-2">
-                                  {result.synonyms.map((synonym, i) => (
-                                    <span
-                                      key={`${synonym}-${i}`}
-                                      className="text-sm"
-                                    >
-                                      {synonym},
-                                    </span>
-                                  ))}
-                                </dd>
-                              </>
+                              <RelatedWordList
+                                title="Synonyms"
+                                wordList={result.synonyms}
+                              />
                             )}
                             {result.antonyms && (
-                              <>
-                                <dt className="font-medium">Antonyms</dt>
-                                <dd className="text-muted-foreground flex gap-2">
-                                  {result.antonyms.map((antonyms, i) => (
-                                    <span
-                                      key={`${antonyms}-${i}`}
-                                      className="text-sm"
-                                    >
-                                      {antonyms},
-                                    </span>
-                                  ))}
-                                </dd>
-                              </>
+                              <RelatedWordList
+                                title="Antonyms"
+                                wordList={result.antonyms}
+                              />
                             )}
                           </div>
                         </div>
@@ -253,53 +236,34 @@ export const WordLookup = () => {
                   </div>
                 );
               })}
-              {/* <div className="border-t border-muted-foreground py-4" />
-              <dl className="space-y-4">
-                <div>
-                  <dt className="font-medium">Meaning</dt>
-                  <dd className="text-muted-foreground">
-                    Definition will appear here...
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Example</dt>
-                  <dd className="text-muted-foreground">
-                    Example sentences will appear here...
-                  </dd>
-                </div>
-              </dl> */}
             </CardContent>
           </Card>
-
-          {/* <Card>
-            <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-4">
-                <div>
-                  <dt className="font-medium">Synonyms</dt>
-                  <dd className="text-muted-foreground">
-                    Similar words will appear here...
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Antonyms</dt>
-                  <dd className="text-muted-foreground">
-                    Opposite words will appear here...
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Etymology</dt>
-                  <dd className="text-muted-foreground">
-                    Word origin will appear here...
-                  </dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card> */}
         </div>
       )}
     </div>
+  );
+};
+
+type RelatedWordListProps = {
+  title: string;
+  wordList: Array<string>;
+};
+
+const RelatedWordList: FC<RelatedWordListProps> = ({ title, wordList }) => {
+  return (
+    <>
+      <h6 className="font-medium  text-sm">{title}</h6>
+      <div className="text-muted-foreground flex">
+        {wordList.map((word, i) => (
+          <div key={`${word}-${i}`} className="flex">
+            <p className="text-sm flex items-center">
+              {i != 0 && <span>, &nbsp;&nbsp;</span>}
+              {word}
+            </p>
+            <SpeakButton text={word} />
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
