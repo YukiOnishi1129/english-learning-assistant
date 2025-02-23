@@ -23,11 +23,11 @@ export default async function Page({ searchParams }: Page) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container py-4">
+        <div className="pl-4 py-4">
           <h1 className="text-2xl font-bold">English Learning Assistant</h1>
         </div>
       </header>
-      <main className="container py-6">
+      <main className="py-6 container m-auto">
         <Tabs defaultValue={defaultTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="grammar">Grammar Check</TabsTrigger>

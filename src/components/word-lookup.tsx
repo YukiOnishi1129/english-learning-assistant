@@ -4,6 +4,7 @@ import { FC, useCallback, useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RingLoader } from "react-spinners";
 
 import { SpeakButton, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ type WordLookupProps = {
 
 export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
   const [word, setWord] = useState<WordStateType | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -126,6 +128,7 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
 
   const fetchWordDefinition = useCallback(
     async (word: string) => {
+      setLoading(true);
       const response = await getWordDefinition(word);
       if (response?.data) {
         setWord({
@@ -133,6 +136,7 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
           results: transformWord(response.data.results),
         });
       }
+      setLoading(false);
     },
     [transformWord]
   );
@@ -179,9 +183,15 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
         </CardContent>
       </Card>
 
-      {word && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+      {loading && (
+        <div className="w-full h-48 flex items-center justify-center">
+          <RingLoader size={48} />
+        </div>
+      )}
+
+      {!loading && word && (
+        <div className="grid gap-4">
+          <Card className="w-full">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="gap-2 grid grid-flow-col auto-cols-max items-end">
