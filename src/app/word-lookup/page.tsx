@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 
-import { WordLookupPageTemplate } from "@/features/word/components/WordLookupPageTemplate";
+import { WordLookupPage as Template } from "@/features/word/components/WordLookupPage";
 
 import { getWordDefinitionApi } from "@/features/word/actions/word-api";
 
@@ -31,7 +31,7 @@ export default async function WordLookupPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <WordLookupPageTemplate keyword={keyword} />
+      <Template keyword={keyword} />
     </HydrationBoundary>
   );
 }

@@ -16,13 +16,11 @@ const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
 });
 
-type WordLookupPageTemplateProps = {
+type WordLookupPageProps = {
   keyword?: string;
 };
 
-export const WordLookupPageTemplate: FC<WordLookupPageTemplateProps> = ({
-  keyword,
-}) => {
+export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
   const router = useRouter();
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

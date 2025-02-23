@@ -82,15 +82,15 @@ export const WordLookupTemplate: FC<WordLookupTemplateProps> = ({
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <div className="gap-2 grid grid-flow-col auto-cols-max items-end">
+                <div className="gap-2 flex items-end">
                   <h5>{data.word}</h5>
                   {partOfSpeechList.map((partOfSpeech) => (
-                    <span
+                    <p
                       key={partOfSpeech}
-                      className="text-muted-foreground text-sm"
+                      className="text-muted-foreground text-sm flex items-end"
                     >
                       {partOfSpeech}
-                    </span>
+                    </p>
                   ))}
                 </div>
                 <SpeakButton text={data.word} />
@@ -99,7 +99,7 @@ export const WordLookupTemplate: FC<WordLookupTemplateProps> = ({
 
             <CardContent>
               {data?.results &&
-                data?.results.map((result) => {
+                data.results.map((result) => {
                   return (
                     <div
                       key={result.partOfSpeech}
