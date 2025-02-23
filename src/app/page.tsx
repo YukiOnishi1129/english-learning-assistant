@@ -3,7 +3,23 @@ import GrammarChecker from "@/components/grammar-checker";
 import { WordLookup } from "@/components/word-lookup";
 import WritingPractice from "@/components/writing-practice";
 
-export default function Page() {
+import { SearchParamsType } from "@/types/util";
+
+type Page = {
+  searchParams: Promise<SearchParamsType>;
+};
+
+export default async function Page({ searchParams }: Page) {
+  const q = await searchParams;
+
+  const tab: string = typeof q["tab"] === "string" ? q["tab"] : "grammar";
+  let defaultTab: "grammar" | "word" | "writing" = "grammar";
+  if (tab === "grammar" || tab === "word" || tab === "writing") {
+    defaultTab = tab;
+  }
+
+  const keyword: string = typeof q["keyword"] === "string" ? q["keyword"] : "";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -12,7 +28,7 @@ export default function Page() {
         </div>
       </header>
       <main className="container py-6">
-        <Tabs defaultValue="grammar" className="space-y-4">
+        <Tabs defaultValue={defaultTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="grammar">Grammar Check</TabsTrigger>
             <TabsTrigger value="word">Word Lookup</TabsTrigger>
@@ -22,7 +38,7 @@ export default function Page() {
             <GrammarChecker />
           </TabsContent>
           <TabsContent value="word">
-            <WordLookup />
+            <WordLookup keyword={keyword} />
           </TabsContent>
           <TabsContent value="writing">
             <WritingPractice />
