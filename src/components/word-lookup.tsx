@@ -18,7 +18,12 @@ import { Volume2 } from "lucide-react";
 
 import { getWordDefinition } from "@/actions/word-api";
 
-import type { WordDefinitionType, WordResult } from "@/types/word";
+import type {
+  WordStateType,
+  WordResult,
+  ShowWordResultType,
+  ShowWordDefinitionType,
+} from "@/types/word";
 
 const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
@@ -32,11 +37,7 @@ const partOfSpeechOrder: Record<string, number> = {
 };
 
 export const WordLookup = () => {
-  let nounCount = 0;
-  let verbCount = 0;
-  let adjectiveCount = 0;
-  let adverbCount = 0;
-  const [word, setWord] = useState<WordDefinitionType | undefined>(undefined);
+  const [word, setWord] = useState<WordStateType | undefined>(undefined);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -63,16 +64,57 @@ export const WordLookup = () => {
     });
   };
 
+  // **変換関数**
+  const transformWord = (
+    results: Array<WordResult>
+  ): Array<ShowWordResultType> => {
+    // partOfSpeech ごとにデータをグループ化
+    const groupedResults: Record<string, ShowWordDefinitionType[]> = {};
+
+    const sortedResults = sortResultsByPartOfSpeech(results);
+
+    sortedResults.forEach((result) => {
+      const {
+        partOfSpeech,
+        definition,
+        examples,
+        synonyms,
+        antonyms,
+        similarTo,
+      } = result;
+
+      if (!groupedResults[partOfSpeech]) {
+        groupedResults[partOfSpeech] = [];
+      }
+
+      groupedResults[partOfSpeech].push({
+        definition,
+        examples,
+        synonyms,
+        antonyms,
+        similarTo,
+      });
+    });
+
+    // グループ化したデータを ShowWordResultType の配列に変換
+    const showResults: ShowWordResultType[] = Object.entries(
+      groupedResults
+    ).map(([partOfSpeech, definitions]) => ({
+      partOfSpeech,
+      definitions,
+    }));
+
+    return showResults;
+  };
+
   const onSubmit = useCallback(
     async (values: z.infer<typeof schema>) => {
       const word = values.keyword;
       const response = await getWordDefinition(word);
       if (response?.data) {
-        console.log("❤️‍🔥");
-        console.log(response);
         setWord({
           word: response.data.word,
-          results: sortResultsByPartOfSpeech(response.data.results),
+          results: transformWord(response.data.results),
         });
       }
     },
@@ -143,69 +185,71 @@ export const WordLookup = () => {
 
             <CardContent>
               {word.results.map((result) => {
-                let count = 0;
-                switch (result.partOfSpeech) {
-                  case "noun":
-                    nounCount++;
-                    count = nounCount;
-                    break;
-                  case "verb":
-                    verbCount++;
-                    count = verbCount;
-                    break;
-                  case "adjective":
-                    adjectiveCount++;
-                    count = adjectiveCount;
-                    break;
-                  case "adverb":
-                    adverbCount++;
-                    count = adverbCount;
-                    break;
-                }
                 return (
-                  <div key={result.definition}>
-                    <dl className="space-y-4 border-t py-4">
-                      <div>
-                        <dt className="font-medium">
-                          {result.partOfSpeech}: {count}
-                        </dt>
-                        <dd className="text-muted-foreground">
-                          {result.definition}
-                        </dd>
-                      </div>
-                      {result.example && (
-                        <div>
-                          <dt className="font-medium">Example</dt>
-                          <dd className="text-muted-foreground">
-                            {result.example}
-                          </dd>
+                  <div
+                    key={result.partOfSpeech}
+                    className="space-y-4 border-t py-4"
+                  >
+                    <h2 className="font-medium">{result.partOfSpeech}</h2>
+                    <div className="grid gap-2">
+                      {result.definitions.map((result, i) => (
+                        <div
+                          key={`${result.definition}-${i}`}
+                          className="pl-4 grid gap-2"
+                        >
+                          <p className="font-medium">
+                            {i + 1}: {result.definition}
+                          </p>
+                          <div className="pl-8 grid gap-2">
+                            {result.examples && (
+                              <>
+                                <h6 className="font-medium text-sm">Example</h6>
+                                {result.examples.map((example, i) => (
+                                  <p
+                                    key={`${example}-${i}`}
+                                    className="text-muted-foreground"
+                                  >
+                                    ・{example}
+                                  </p>
+                                ))}
+                              </>
+                            )}
+                            {result.synonyms && (
+                              <>
+                                <dt className="font-medium  text-sm">
+                                  Synonyms
+                                </dt>
+                                <dd className="text-muted-foreground flex gap-2">
+                                  {result.synonyms.map((synonym, i) => (
+                                    <span
+                                      key={`${synonym}-${i}`}
+                                      className="text-sm"
+                                    >
+                                      {synonym},
+                                    </span>
+                                  ))}
+                                </dd>
+                              </>
+                            )}
+                            {result.antonyms && (
+                              <>
+                                <dt className="font-medium">Antonyms</dt>
+                                <dd className="text-muted-foreground flex gap-2">
+                                  {result.antonyms.map((antonyms, i) => (
+                                    <span
+                                      key={`${antonyms}-${i}`}
+                                      className="text-sm"
+                                    >
+                                      {antonyms},
+                                    </span>
+                                  ))}
+                                </dd>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      {result.synonyms && (
-                        <div>
-                          <dt className="font-medium">Synonyms</dt>
-                          <dd className="text-muted-foreground flex gap-2">
-                            {result.synonyms.map((synonym, i) => (
-                              <span key={`${synonym}-$i}`} className="text-sm">
-                                {synonym},
-                              </span>
-                            ))}
-                          </dd>
-                        </div>
-                      )}
-                      {result.antonyms && (
-                        <div>
-                          <dt className="font-medium">Antonyms</dt>
-                          <dd className="text-muted-foreground flex gap-2">
-                            {result.antonyms.map((antonyms, i) => (
-                              <span key={`${antonyms}-$i}`} className="text-sm">
-                                {antonyms},
-                              </span>
-                            ))}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
