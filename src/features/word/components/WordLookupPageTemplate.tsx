@@ -7,7 +7,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RingLoader } from "react-spinners";
 
-import { getShowWord } from "@/features/word/actions/word";
+import { getWordDefinitionApi } from "@/features/word/actions/word-api";
 import { RelatedWordList } from "@/features/word/components/RelatedWordList";
 
 import { SpeakButton, Button } from "@/shared/components/ui/button";
@@ -49,20 +49,20 @@ export const WordLookupPageTemplate: FC<WordLookupPageTemplateProps> = ({
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["word", keyword || ""],
-    queryFn: async () => getShowWord(keyword || ""),
+    queryFn: async () => getWordDefinitionApi(keyword || ""),
   });
 
   const partOfSpeechList = useMemo(() => {
     const resultList: Array<string> = [];
-    if (data?.results) {
-      data?.results.forEach((result) => {
+    if (data?.data?.results) {
+      data?.data?.results.forEach((result) => {
         if (!resultList.includes(result.partOfSpeech)) {
           resultList.push(result.partOfSpeech);
         }
       });
     }
     return sortPartOfSpeechArray(resultList);
-  }, [data?.results]);
+  }, [data?.data?.results]);
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof schema>) => {
@@ -112,13 +112,13 @@ export const WordLookupPageTemplate: FC<WordLookupPageTemplateProps> = ({
         </div>
       )}
 
-      {!isLoading && data?.word && (
+      {!isLoading && data?.data?.word && (
         <div className="grid gap-4">
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="gap-2 grid grid-flow-col auto-cols-max items-end">
-                  <h5>{data.word}</h5>
+                  <h5>{data.data.word}</h5>
                   {partOfSpeechList.map((partOfSpeech) => (
                     <span
                       key={partOfSpeech}
@@ -128,66 +128,69 @@ export const WordLookupPageTemplate: FC<WordLookupPageTemplateProps> = ({
                     </span>
                   ))}
                 </div>
-                <SpeakButton text={data.word} />
+                <SpeakButton text={data.data.word} />
               </CardTitle>
             </CardHeader>
 
             <CardContent>
-              {data.results.map((result) => {
-                return (
-                  <div
-                    key={result.partOfSpeech}
-                    className="space-y-4 border-t py-4"
-                  >
-                    <h2 className="font-medium">{result.partOfSpeech}</h2>
-                    <div className="grid gap-2">
-                      {result.definitions.map((result, i) => (
-                        <div
-                          key={`${result.definition}-${i}`}
-                          className="pl-4 grid gap-2"
-                        >
-                          <p className="font-medium">
-                            {i + 1}: {result.definition}
-                          </p>
-                          <div className="pl-8 grid gap-2">
-                            {result.examples && (
-                              <>
-                                <h6 className="font-medium text-sm">Example</h6>
-                                {result.examples.map((example, i) => (
-                                  <div
-                                    key={`${example}-${i}`}
-                                    className="flex gap-2"
-                                  >
-                                    <p
+              {data?.data?.results &&
+                data.data.results.map((result) => {
+                  return (
+                    <div
+                      key={result.partOfSpeech}
+                      className="space-y-4 border-t py-4"
+                    >
+                      <h2 className="font-medium">{result.partOfSpeech}</h2>
+                      <div className="grid gap-2">
+                        {result.definitions.map((result, i) => (
+                          <div
+                            key={`${result.definition}-${i}`}
+                            className="pl-4 grid gap-2"
+                          >
+                            <p className="font-medium">
+                              {i + 1}: {result.definition}
+                            </p>
+                            <div className="pl-8 grid gap-2">
+                              {result.examples && (
+                                <>
+                                  <h6 className="font-medium text-sm">
+                                    Example
+                                  </h6>
+                                  {result.examples.map((example, i) => (
+                                    <div
                                       key={`${example}-${i}`}
-                                      className="text-muted-foreground flex items-center"
+                                      className="flex gap-2"
                                     >
-                                      ・{example}
-                                    </p>
-                                    <SpeakButton text={example} />
-                                  </div>
-                                ))}
-                              </>
-                            )}
-                            {result.synonyms && (
-                              <RelatedWordList
-                                title="Synonyms"
-                                wordList={result.synonyms}
-                              />
-                            )}
-                            {result.antonyms && (
-                              <RelatedWordList
-                                title="Antonyms"
-                                wordList={result.antonyms}
-                              />
-                            )}
+                                      <p
+                                        key={`${example}-${i}`}
+                                        className="text-muted-foreground flex items-center"
+                                      >
+                                        ・{example}
+                                      </p>
+                                      <SpeakButton text={example} />
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                              {result.synonyms && (
+                                <RelatedWordList
+                                  title="Synonyms"
+                                  wordList={result.synonyms}
+                                />
+                              )}
+                              {result.antonyms && (
+                                <RelatedWordList
+                                  title="Antonyms"
+                                  wordList={result.antonyms}
+                                />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </CardContent>
           </Card>
         </div>

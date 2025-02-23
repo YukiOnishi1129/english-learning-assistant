@@ -1,8 +1,8 @@
 export type WordAPIResponse = {
   word: string;
-  results: Array<WordResult>;
-  frequency: number;
-  pronunciation: {
+  results?: Array<WordResult>;
+  frequency?: number;
+  pronunciation?: {
     all: string;
   };
   syllables: {

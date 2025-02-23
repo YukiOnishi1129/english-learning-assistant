@@ -6,7 +6,7 @@ import {
 
 import { WordLookupPageTemplate } from "@/features/word/components/WordLookupPageTemplate";
 
-import { getShowWord } from "@/features/word/actions/word";
+import { getWordDefinitionApi } from "@/features/word/actions/word-api";
 
 import { SearchParamsType } from "@/shared/types/util";
 
@@ -25,7 +25,7 @@ export default async function WordLookupPage({
   if (keyword) {
     await queryClient.prefetchQuery({
       queryKey: ["word", keyword || ""],
-      queryFn: async () => getShowWord(keyword || ""),
+      queryFn: async () => getWordDefinitionApi(keyword || ""),
     });
   }
 
