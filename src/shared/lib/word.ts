@@ -2,7 +2,7 @@ import type {
   WordResult,
   ShowWordResultType,
   ShowWordDefinitionType,
-} from "@/shared/types/word";
+} from "@/features/word/types/word";
 
 const partOfSpeechOrder: Record<string, number> = {
   noun: 1,

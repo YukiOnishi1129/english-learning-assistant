@@ -2,7 +2,7 @@
 import { getWordDefinitionApi } from "./word-api";
 
 import { transformShowWord } from "@/shared/lib/word";
-import type { ShowWordStateType } from "@/shared/types/word";
+import type { ShowWordStateType } from "@/features/word/types/word";
 
 export const getShowWord = async (
   word: string

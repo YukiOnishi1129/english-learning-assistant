@@ -1,6 +1,6 @@
 "use server";
 import { ResponseType } from "@/shared/types/response";
-import { WordAPIResponse } from "@/shared/types/word";
+import { WordAPIResponse } from "@/features/word/types/word";
 
 const WORD_API_BASE_URL = "https://wordsapiv1.p.rapidapi.com/words/";
 const options = {

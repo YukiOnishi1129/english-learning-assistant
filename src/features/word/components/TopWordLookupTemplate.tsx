@@ -31,11 +31,13 @@ const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
 });
 
-type WordLookupProps = {
+type TopWordLookupTemplateProps = {
   keyword?: string;
 };
 
-export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
+export const TopWordLookupTemplate: FC<TopWordLookupTemplateProps> = ({
+  keyword,
+}) => {
   const [inputKeyword, setInputKeyword] = useState(keyword);
 
   const form = useForm<z.infer<typeof schema>>({
