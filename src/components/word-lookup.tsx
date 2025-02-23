@@ -201,7 +201,7 @@ const RelatedWordList: FC<RelatedWordListProps> = ({ title, wordList }) => {
           <div key={`${word}-${i}`} className="flex">
             <p className="text-sm flex items-center">
               {i != 0 && <span>, &nbsp;&nbsp;</span>}
-              <NextLink href={`?tab=word&keyword=${word}`}>{word}</NextLink>
+              <NextLink href={`/word-lookup?keyword=${word}`}>{word}</NextLink>
             </p>
             <SpeakButton text={word} />
           </div>

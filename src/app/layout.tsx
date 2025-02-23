@@ -28,7 +28,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Provider>{children}</Provider>
+        <Provider>
+          <div className="min-h-screen bg-background">
+            <header className="border-b">
+              <div className="pl-4 py-4">
+                <h1 className="text-2xl font-bold">
+                  English Learning Assistant
+                </h1>
+              </div>
+            </header>
+            <main className="py-6 container m-auto">{children}</main>
+          </div>
+        </Provider>
       </body>
     </html>
   );
