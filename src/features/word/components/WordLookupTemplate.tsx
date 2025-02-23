@@ -24,7 +24,7 @@ import {
 import { type ShowWordStateType } from "@/features/word/types/word";
 
 type WordLookupTemplateProps = {
-  isLoading: boolean;
+  isLoading?: boolean;
   data?: ShowWordStateType;
   form: UseFormReturn<
     {

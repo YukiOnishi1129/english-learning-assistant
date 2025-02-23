@@ -1,16 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { FC, useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { WordLookupTemplate } from "./WordLookupTemplate";
 
-import { getWordDefinitionApi } from "@/features/word/actions/word-api";
-
 import { sortPartOfSpeechArray } from "@/shared/lib/word";
+
+import { type ShowWordStateType } from "@/features/word/types/word";
+import { type ResponseType } from "@/shared/types/response";
 
 const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
@@ -21,6 +22,7 @@ type WordLookupPageProps = {
 };
 
 export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -28,16 +30,15 @@ export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
       keyword: keyword || "",
     },
   });
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["word", keyword || ""],
-    queryFn: async () => getWordDefinitionApi(keyword || ""),
-  });
+  const data = queryClient.getQueryData([
+    "word",
+    keyword || "",
+  ]) as ResponseType<ShowWordStateType | undefined>;
 
   const partOfSpeechList = useMemo(() => {
     const resultList: Array<string> = [];
     if (data?.data?.results) {
-      data?.data?.results.forEach((result) => {
+      data.data?.results.forEach((result) => {
         if (!resultList.includes(result.partOfSpeech)) {
           resultList.push(result.partOfSpeech);
         }
@@ -59,15 +60,10 @@ export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
     )
   );
 
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
-
   const resData = data?.data;
 
   return (
     <WordLookupTemplate
-      isLoading={isLoading}
       data={resData}
       form={form}
       partOfSpeechList={partOfSpeechList}
