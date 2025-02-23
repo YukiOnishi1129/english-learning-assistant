@@ -1,5 +1,6 @@
 "use client";
-import { FC, useCallback, useState, useMemo } from "react";
+import NextLink from "next/link";
+import { FC, useCallback, useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,13 +36,17 @@ const partOfSpeechOrder: Record<string, number> = {
   adverb: 4,
 };
 
-export const WordLookup = () => {
+type WordLookupProps = {
+  keyword?: string;
+};
+
+export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
   const [word, setWord] = useState<WordStateType | undefined>(undefined);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      keyword: "",
+      keyword: keyword || "",
     },
   });
 
@@ -107,20 +112,6 @@ export const WordLookup = () => {
     []
   );
 
-  const onSubmit = useCallback(
-    async (values: z.infer<typeof schema>) => {
-      const word = values.keyword;
-      const response = await getWordDefinition(word);
-      if (response?.data) {
-        setWord({
-          word: response.data.word,
-          results: transformWord(response.data.results),
-        });
-      }
-    },
-    [transformWord]
-  );
-
   const partOfSpeechList = useMemo(() => {
     const resultList: Array<string> = [];
     if (word) {
@@ -132,6 +123,34 @@ export const WordLookup = () => {
     }
     return sortPartOfSpeechArray(resultList);
   }, [word]);
+
+  const fetchWordDefinition = useCallback(
+    async (word: string) => {
+      const response = await getWordDefinition(word);
+      if (response?.data) {
+        setWord({
+          word: response.data.word,
+          results: transformWord(response.data.results),
+        });
+      }
+    },
+    [transformWord]
+  );
+
+  const onSubmit = useCallback(
+    async (values: z.infer<typeof schema>) => {
+      const word = values.keyword;
+      fetchWordDefinition(word);
+    },
+    [fetchWordDefinition]
+  );
+
+  useEffect(() => {
+    if (keyword) {
+      fetchWordDefinition(keyword);
+      form.setValue("keyword", keyword);
+    }
+  }, [keyword, fetchWordDefinition, form]);
 
   return (
     <div className="space-y-4">
@@ -258,7 +277,7 @@ const RelatedWordList: FC<RelatedWordListProps> = ({ title, wordList }) => {
           <div key={`${word}-${i}`} className="flex">
             <p className="text-sm flex items-center">
               {i != 0 && <span>, &nbsp;&nbsp;</span>}
-              {word}
+              <NextLink href={`?tab=word&keyword=${word}`}>{word}</NextLink>
             </p>
             <SpeakButton text={word} />
           </div>
