@@ -19,7 +19,7 @@ type TopWordLookupTemplateProps = {
   keyword?: string;
 };
 
-export const TopWordLookupTemplate: FC<TopWordLookupTemplateProps> = ({
+export const TopWordLookupPage: FC<TopWordLookupTemplateProps> = ({
   keyword,
 }) => {
   const [inputKeyword, setInputKeyword] = useState(keyword);
