@@ -33,7 +33,7 @@ export type ShowWordResultType = {
   definitions: Array<ShowWordDefinitionType>;
 };
 
-export type WordStateType = {
+export type ShowWordStateType = {
   word: string;
   results: Array<ShowWordResultType>;
 };

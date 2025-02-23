@@ -1,10 +1,13 @@
 "use client";
 import NextLink from "next/link";
-import { FC, useCallback, useState, useMemo, useEffect } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RingLoader } from "react-spinners";
+
+import { getShowWord } from "@/actions/word";
 
 import { SpeakButton, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,33 +20,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { getWordDefinition } from "@/actions/word-api";
-
-import type {
-  WordStateType,
-  WordResult,
-  ShowWordResultType,
-  ShowWordDefinitionType,
-} from "@/types/word";
+import { sortPartOfSpeechArray } from "@/lib/word";
 
 const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
 });
-
-const partOfSpeechOrder: Record<string, number> = {
-  noun: 1,
-  verb: 2,
-  adjective: 3,
-  adverb: 4,
-};
 
 type WordLookupProps = {
   keyword?: string;
 };
 
 export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
-  const [word, setWord] = useState<WordStateType | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [inputKeyword, setInputKeyword] = useState(keyword);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -52,109 +40,35 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
     },
   });
 
-  const sortResultsByPartOfSpeech = (
-    results: Array<WordResult>
-  ): Array<WordResult> => {
-    return results.sort((a, b) => {
-      const orderA = partOfSpeechOrder[a.partOfSpeech] || 999; // 該当しない場合は最後に
-      const orderB = partOfSpeechOrder[b.partOfSpeech] || 999;
-      return orderA - orderB;
-    });
-  };
-
-  const sortPartOfSpeechArray = (arr: Array<string>): Array<string> => {
-    return arr.sort((a, b) => {
-      const orderA = partOfSpeechOrder[a] || 999; // 該当しない場合は最後に
-      const orderB = partOfSpeechOrder[b] || 999;
-      return orderA - orderB;
-    });
-  };
-
-  // **変換関数**
-  const transformWord = useCallback(
-    (results: Array<WordResult>): Array<ShowWordResultType> => {
-      // partOfSpeech ごとにデータをグループ化
-      const groupedResults: Record<string, ShowWordDefinitionType[]> = {};
-
-      const sortedResults = sortResultsByPartOfSpeech(results);
-
-      sortedResults.forEach((result) => {
-        const {
-          partOfSpeech,
-          definition,
-          examples,
-          synonyms,
-          antonyms,
-          similarTo,
-        } = result;
-
-        if (!groupedResults[partOfSpeech]) {
-          groupedResults[partOfSpeech] = [];
-        }
-
-        groupedResults[partOfSpeech].push({
-          definition,
-          examples,
-          synonyms,
-          antonyms,
-          similarTo,
-        });
-      });
-
-      // グループ化したデータを ShowWordResultType の配列に変換
-      const showResults: ShowWordResultType[] = Object.entries(
-        groupedResults
-      ).map(([partOfSpeech, definitions]) => ({
-        partOfSpeech,
-        definitions,
-      }));
-
-      return showResults;
-    },
-    []
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["word", inputKeyword || ""],
+    queryFn: async () => getShowWord(inputKeyword || ""),
+    enabled: !!inputKeyword,
+  });
 
   const partOfSpeechList = useMemo(() => {
     const resultList: Array<string> = [];
-    if (word) {
-      word.results.forEach((result) => {
+    if (data?.results) {
+      data?.results.forEach((result) => {
         if (!resultList.includes(result.partOfSpeech)) {
           resultList.push(result.partOfSpeech);
         }
       });
     }
     return sortPartOfSpeechArray(resultList);
-  }, [word]);
+  }, [data?.results]);
 
-  const fetchWordDefinition = useCallback(
-    async (word: string) => {
-      setLoading(true);
-      const response = await getWordDefinition(word);
-      if (response?.data) {
-        setWord({
-          word: response.data.word,
-          results: transformWord(response.data.results),
-        });
-      }
-      setLoading(false);
-    },
-    [transformWord]
-  );
+  const onSubmit = useCallback(async (values: z.infer<typeof schema>) => {
+    const word = values.keyword;
 
-  const onSubmit = useCallback(
-    async (values: z.infer<typeof schema>) => {
-      const word = values.keyword;
-      fetchWordDefinition(word);
-    },
-    [fetchWordDefinition]
-  );
-
-  useEffect(() => {
-    if (keyword) {
-      fetchWordDefinition(keyword);
-      form.setValue("keyword", keyword);
+    if (word) {
+      setInputKeyword(word);
     }
-  }, [keyword, fetchWordDefinition, form]);
+  }, []);
+
+  if (error) {
+    return <p>Error: {error.message}</p>;
+  }
 
   return (
     <div className="space-y-4">
@@ -177,25 +91,25 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
                   </FormItem>
                 )}
               />
-              <Button>Search</Button>
+              <Button disabled={isLoading}>Search</Button>
             </form>
           </Form>
         </CardContent>
       </Card>
 
-      {loading && (
+      {isLoading && (
         <div className="w-full h-48 flex items-center justify-center">
           <RingLoader size={48} />
         </div>
       )}
 
-      {!loading && word && (
+      {!isLoading && data?.word && (
         <div className="grid gap-4">
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="gap-2 grid grid-flow-col auto-cols-max items-end">
-                  <h5>{word.word}</h5>
+                  <h5>{data.word}</h5>
                   {partOfSpeechList.map((partOfSpeech) => (
                     <span
                       key={partOfSpeech}
@@ -205,12 +119,12 @@ export const WordLookup: FC<WordLookupProps> = ({ keyword }) => {
                     </span>
                   ))}
                 </div>
-                <SpeakButton text={word.word} />
+                <SpeakButton text={data.word} />
               </CardTitle>
             </CardHeader>
 
             <CardContent>
-              {word.results.map((result) => {
+              {data.results.map((result) => {
                 return (
                   <div
                     key={result.partOfSpeech}

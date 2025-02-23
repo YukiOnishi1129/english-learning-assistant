@@ -11,7 +11,7 @@ const options = {
   },
 };
 
-export const getWordDefinition = async (word: string) => {
+export const getWordDefinitionApi = async (word: string) => {
   try {
     const response = await fetch(`${WORD_API_BASE_URL}${word}`, options);
     if (response.status === 200) {
