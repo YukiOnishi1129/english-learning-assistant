@@ -30,22 +30,21 @@ export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
       keyword: keyword || "",
     },
   });
-  const data = queryClient.getQueryData([
-    "word",
-    keyword || "",
-  ]) as ResponseType<ShowWordStateType | undefined>;
+  const res = queryClient.getQueryData<
+    ResponseType<ShowWordStateType | undefined>
+  >(["word", keyword || ""]);
 
   const partOfSpeechList = useMemo(() => {
     const resultList: Array<string> = [];
-    if (data?.data?.results) {
-      data.data?.results.forEach((result) => {
+    if (res?.data?.results) {
+      res.data?.results.forEach((result) => {
         if (!resultList.includes(result.partOfSpeech)) {
           resultList.push(result.partOfSpeech);
         }
       });
     }
     return sortPartOfSpeechArray(resultList);
-  }, [data?.data?.results]);
+  }, [res?.data?.results]);
 
   const onSubmit = form.handleSubmit(
     useCallback(
@@ -60,7 +59,7 @@ export const WordLookupPage: FC<WordLookupPageProps> = ({ keyword }) => {
     )
   );
 
-  const resData = data?.data;
+  const resData = res?.data;
 
   return (
     <WordLookupTemplate
