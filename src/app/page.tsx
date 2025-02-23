@@ -4,7 +4,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import GrammarChecker from "@/shared/components/grammar-checker";
+import { TopGrammarCheckerPage } from "@/features/grammar/components/TopGrammarCheckerPage";
 import { TopWordLookupPage } from "@/features/word/components/TopWordLookupPage";
 import WritingPractice from "@/shared/components/writing-practice";
 
@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: Page) {
         <TabsTrigger value="writing">Writing Practice</TabsTrigger>
       </TabsList>
       <TabsContent value="grammar">
-        <GrammarChecker />
+        <TopGrammarCheckerPage />
       </TabsContent>
       <TabsContent value="word">
         <TopWordLookupPage keyword={keyword} />
