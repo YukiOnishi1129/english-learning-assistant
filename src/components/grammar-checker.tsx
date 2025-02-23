@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+"use client";
+import { Button } from "@/components/ui/button/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
