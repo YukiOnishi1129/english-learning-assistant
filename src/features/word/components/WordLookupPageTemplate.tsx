@@ -1,5 +1,6 @@
 "use client";
-import { FC, useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FC, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -7,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RingLoader } from "react-spinners";
 
 import { getShowWord } from "@/features/word/actions/word";
-
 import { RelatedWordList } from "@/features/word/components/RelatedWordList";
 
 import { SpeakButton, Button } from "@/shared/components/ui/button";
@@ -32,15 +32,14 @@ const schema = z.object({
   keyword: z.string().nonempty("Please enter a keyword"),
 });
 
-type TopWordLookupTemplateProps = {
+type WordLookupPageTemplateProps = {
   keyword?: string;
 };
 
-export const TopWordLookupTemplate: FC<TopWordLookupTemplateProps> = ({
+export const WordLookupPageTemplate: FC<WordLookupPageTemplateProps> = ({
   keyword,
 }) => {
-  const [inputKeyword, setInputKeyword] = useState(keyword);
-
+  const router = useRouter();
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -49,9 +48,8 @@ export const TopWordLookupTemplate: FC<TopWordLookupTemplateProps> = ({
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["word", inputKeyword || ""],
-    queryFn: async () => getShowWord(inputKeyword || ""),
-    enabled: !!inputKeyword,
+    queryKey: ["word", keyword || ""],
+    queryFn: async () => getShowWord(keyword || ""),
   });
 
   const partOfSpeechList = useMemo(() => {
@@ -66,13 +64,16 @@ export const TopWordLookupTemplate: FC<TopWordLookupTemplateProps> = ({
     return sortPartOfSpeechArray(resultList);
   }, [data?.results]);
 
-  const onSubmit = useCallback(async (values: z.infer<typeof schema>) => {
-    const word = values.keyword;
+  const onSubmit = useCallback(
+    async (values: z.infer<typeof schema>) => {
+      const word = values.keyword;
 
-    if (word) {
-      setInputKeyword(word);
-    }
-  }, []);
+      if (word) {
+        router.replace("/word-lookup?keyword=" + word);
+      }
+    },
+    [router]
+  );
 
   if (error) {
     return <p>Error: {error.message}</p>;
